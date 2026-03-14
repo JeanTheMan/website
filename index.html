@@ -388,10 +388,6 @@
             { text: '  > escape_matrix.bin ................. [OK]', delay: 300 },
             { text: '  > reality_engine.exe .............. [OK]', delay: 300 },
             { text: '', delay: 200 },
-            { text: '[ERROR] Critical anomaly detected in sector 7', delay: 600, class: 'error' },
-            { text: '[SYSTEM] Attempting recovery...', delay: 800, class: 'prompt' },
-            { text: '[OK] Recovery successful', delay: 500 },
-            { text: '', delay: 300 },
             { text: '[SYSTEM] All systems operational', delay: 500, class: 'prompt' },
             { text: '[SYSTEM] Ready for user input', delay: 400, class: 'prompt' },
             { text: "Type 'help' for available commands :)", delay: 400, class: 'warning' },
@@ -455,6 +451,7 @@
                     '  frameworks  - Shows used frameworks I have used previously',
                     '  clear  - Clear the terminal screen',
                     '  links  - Show available links',
+                    '  blog  - View my blog',
                     '  secret  - Show <REDACTED>',
                     ''
                 ]
@@ -465,7 +462,6 @@
                     '',
                     '  [1] GitHub        - https://github.com/JeanTheMan',
                     '  [2] LinkedIn        - https://www.linkedin.com/in/in5',
-                    ''
                 ]
             },
             contact: {
@@ -477,6 +473,9 @@
             },
             clear: {
                 action: 'clear'
+            },
+            blog: {
+                action: 'blog'
             },
             languages: {
                 output: [
@@ -621,6 +620,8 @@
                     // Just show new prompt
                 } else if (command === 'clear') {
                     terminalOutput.innerHTML = '';
+                } else if (command === 'clear') {
+                    window.location = 'https://blog.jean2.com';
                 } else if (commands[command]) {
                     // Display command output
                     const cmd = commands[command];
