@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+    margin: 0;
+    background: transparent;
+    font-family: "Helvetica", Arial, sans-serif;
+}
+
+.club-card {
+    width: 202px;
+    max-width: 300px;
+    height: 195px;
+    background: rgba(0,0,0,1);
+    color: #ffffff;
+    border-radius: 18px;
+    padding: 12px;
+    border: 1px solid rgba(54, 160, 235, 0.3);
+    border-top: 2px solid rgba(54, 160, 235, 0.75);
+}
+
+#match-list {
+    margin-top: 10px;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+}
+
+.event-box {
+    display: flex;
+    align-items: center;
+    background: #000000;
+    border-radius: 10px;
+    padding: 8px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(54, 160, 235, 0.3);
+    height: 54px;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: transform 0.4s ease, border-color 0.4s ease;
+    box-shadow: 0 0 15px rgba(26, 58, 109, 0.4);
+}
+
+.event-box:hover {
+    transform: scale(1.05);
+    border-color: rgba(54, 160, 235, 0.75);
+    box-shadow: 0 0 25px rgba(26, 58, 109, 0.9);
+}
+
+.date-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    margin-right: 12px;
+    background: #111;
+    border: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.date-month {
+    font-size: 8px;
+    color: #3598db;
+    font-weight: bold;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.date-day {
+    font-size: 14px;
+    color: #ffffff;
+    font-weight: bold;
+    line-height: 1.1;
+}
+
+.info-container {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.match-name {
+    color: #3598db;
+    font-weight: bold;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.opponent-name {
+    color: #ffffff;
+    font-size: 12px;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.loading-text {
+    color: #ffffff;
+    font-size: 12px;
+    text-align: center;
+    margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="club-card">
+    <div id="match-list">
+        <div class="loading-text">Loading matches...</div>
+    </div>
+</div>
+
+<script>
+function formatDate(timestamp) {
+    const date = new Date(timestamp * 1000);
+    const month = date.toLocaleString('en-US', { month: 'short' });
+    const day = date.getDate();
+    return { month, day };
+}
+
+function capitalizeName(str) {
+    if (!str) return "";
+    return str.replace(/-/g, ' ')
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
+async function loadClubMatches() {
+
+    const list = document.getElementById('match-list');
+    const headers = { 'User-Agent': 'ClubSidebar/1.4' };
+
+    try {
+        const r = await fetch(
+            'https://api.chess.com/pub/club/the-nexus-void/matches',
+            { headers }
+        );
+
+        const d = await r.json();
+
+        const upcoming = (d.registered || []).filter(m => m.start_time);
+
+        if (upcoming.length === 0) {
+            list.innerHTML =
+                '<div class="loading-text">No matches with set dates.</div>';
+            return;
+        }
+
+        list.innerHTML = '';
+
+        upcoming
+            .sort((a, b) => a.start_time - b.start_time)
+            .slice(0, 3)
+            .forEach(m => {
+
+                const { month, day } = formatDate(m.start_time);
+
+                const matchId = m['@id'].split('/').pop();
+                const webUrl =
+                    `https://www.chess.com/club/matches/${matchId}`;
+
+                const slug = m.opponent.split('/').pop();
+                const opponent = capitalizeName(slug);
+
+                list.innerHTML += `
+                    <a href="${webUrl}" target="_blank" style="text-decoration:none;color:inherit;">
+                        <div class="event-box" onclick="window.open('${webUrl}', '_blank')">
+                            <div class="date-badge">
+                                <span class="date-month">${month}</span>
+                                <span class="date-day">${day}</span>
+                            </div>
+                            <div class="info-container">
+                                <span class="match-name">The Nexus Void</span>
+                                <span class="opponent-name">vs ${opponent}</span>
+                            </div>
+                        </div>
+                    </a>`;
+            });
+
+    } catch (e) {
+        list.innerHTML =
+            "<div class='loading-text'>The Nexus Void is quiet...</div>";
+    }
+}
+
+loadClubMatches();
+</script>
+
+</body>
+</html>
